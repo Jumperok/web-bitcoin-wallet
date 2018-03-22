@@ -1,0 +1,44 @@
+extends layout
+
+block content
+  #wrapper
+    div(id='container', class='center-text')
+      span(id='close', onclick='location.reload()', title='sign out')
+        img(src='/images/close_button.svg')
+      #content
+        img(src='/images/bitcoin_wallet.svg')
+        h1 Bitcoin Wallet
+        form(id='pass_form')
+          p Type PK
+          input(id='passphrase' type='text' placeholder='Private Key' title='Can also use compressed WIF key.')
+          button(type='submit') Open
+          #status
+          
+  script(src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js')
+  script.
+    $(document.forms['pass_form']).on('submit', function(e) {
+      e.preventDefault();
+      //var form = $(this);
+      //console.log($('#passphrase').val());
+      $.ajax({
+        url: '/',
+        method: 'POST',
+        data: {pk: $('#passphrase').val()},
+      //-   complete: function() {
+      //-     $(":submit", form).button("reset");
+      //-   },
+        statusCode: {
+          200: function() {
+            //form.html("You are logged in").addClass('alert-success');
+            window.location.href = "/send";
+          },
+          400: function(jqXHR) {
+            //- var error = JSON.parse(jqXHR.responseText);
+            //- $('.error', form).html(error.message);
+            console.log("looool");
+            console.log(jqXHR);
+          }
+        }
+      });
+      //return false;
+    });

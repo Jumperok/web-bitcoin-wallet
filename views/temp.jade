@@ -1,0 +1,11 @@
+form(id='send_form', action='javascript:send_tx();')
+  .left-text
+    p To deposit funds to your wallet, send Bitcoin to this address:
+    span(id='adr')
+    div
+      h2(id='balance') Balance:
+      span(id='transactions')
+    div
+      input(id='to', type='text', placeholder='address')
+      input(id='amount', type='text', placeholder='amount')
+      button(type='submit') Send

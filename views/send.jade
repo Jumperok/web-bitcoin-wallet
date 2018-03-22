@@ -1,0 +1,53 @@
+extends layout
+
+block content
+  #wrapper
+    div(id='container', class='center-text')
+      span(id='close', onclick='location.reload()', title='sign out')
+        img(src='/images/close_button.svg')
+      #content
+        img(src='/images/bitcoin_wallet.svg')
+        h1 Bitcoin Wallet
+        form(id='send_form')
+          .left-text
+            p To deposit funds to your wallet, send Bitcoin to this address:
+            span(id='adr') #{address}
+            div
+              h2(id='balance') Balance:
+              span(id='transactions') #{balance}
+            div
+              input(id='to', type='text', placeholder='address')
+              input(id='amount', type='text', placeholder='amount')
+              button(type='submit') Send
+            #status
+  script(src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js')
+  script.
+    $(document.forms['send_form']).on('submit', function(e) {
+      e.preventDefault();
+      //var form = $(this);
+      //console.log($('#passphrase').val());
+      $.ajax({
+        url: '/send',
+        method: 'POST',
+        data: {toAddr: $('#to').val(), amount: $('#amount').val()},
+      //-   complete: function() {
+      //-     $(":submit", form).button("reset");
+      //-   },
+        statusCode: {
+          200: function(jqXHR) {
+            
+            $("#status").text(jqXHR.responseText);
+            //form.html("You are logged in").addClass('alert-success');
+            //window.location.href = "/send";
+          },
+          400: function(jqXHR) {
+            $("#status").text(jqXHR.responseText);
+            //- var error = JSON.parse(jqXHR.responseText);
+            //- $('.error', form).html(error.message);
+            console.log("looool");
+            console.log(jqXHR);
+          }
+        }
+      });
+      //return false;
+    });
