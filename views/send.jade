@@ -20,6 +20,8 @@ block content
               input(id='amount', type='text', placeholder='amount')
               button(type='submit') Send
             #status
+            button(type='button' id='button') Confirms
+            #confirms
   script(src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js')
   script.
     $(document.forms['send_form']).on('submit', function(e) {
@@ -51,3 +53,31 @@ block content
       });
       //return false;
     });
+    
+    $("#button").click(function(e){
+      e.preventDefault();
+      $.ajax({
+        url: '/send/:txid',
+        method: 'POST',
+        data: {txid: 'fb11cf1b44aba478ba21071a589d31975db4e5437c1e6fb2d19f0918645f04a3'},
+      //-   complete: function() {
+      //-     $(":submit", form).button("reset");
+      //-   },
+        statusCode: {
+          200: function(jqXHR) {
+            
+            $("#confirms").text(jqXHR.responseText);
+            //form.html("You are logged in").addClass('alert-success');
+            //window.location.href = "/send";
+          },
+          400: function(jqXHR) {
+            $("#confirms").text(jqXHR.responseText);
+            //- var error = JSON.parse(jqXHR.responseText);
+            //- $('.error', form).html(error.message);
+            console.log("looool");
+            console.log(jqXHR);
+          }
+        }
+      });
+    });
+    
