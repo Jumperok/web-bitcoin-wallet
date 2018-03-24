@@ -1,6 +1,5 @@
 const router = require('express').Router();
 const bitcore = require('bitcore-lib');
-
 const db = require('../db');
 const client = require('../lib/bitcoin-client');
 
@@ -13,10 +12,10 @@ router.post('/', function(req, res, next) {
   const privateKeyString = req.body.pk;
   if(/\b[A-Fa-f0-9]{64}\b/.test(privateKeyString)) {
     console.log("VALID");
-    console.log('db', db);
+    //console.log('db', db);
     db.set('addrFromPrKey', bitcore.PrivateKey(privateKeyString).toAddress());
-    console.log('after set key');
-    WIFkey = bitcore.PrivateKey(privateKeyString).toWIF();
+    //console.log('after set key');
+    const WIFkey = bitcore.PrivateKey(privateKeyString).toWIF();
 
     (new Promise((resolve, reject) => {
       client.importPrivKey(WIFkey, (err, res) => {
@@ -24,7 +23,7 @@ router.post('/', function(req, res, next) {
       })
     }))
     .then(res => {
-      console.log('before listUnspent');
+      //console.log('before listUnspent');
       return new Promise((resolve, reject) => {
         client.listUnspent(1, 9999999, [db.get('addrFromPrKey').toString()], function(err, res){
           err ? reject(err) : resolve(res);
@@ -37,7 +36,7 @@ router.post('/', function(req, res, next) {
         return acc;
       }, 0);
 
-      console.log('calculating balance', balance);
+      //console.log('calculating balance', balance);
       db.set('balance', balance);
     })
     .then(() => {
