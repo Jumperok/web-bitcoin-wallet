@@ -2,6 +2,10 @@ const router = require('express').Router();
 const bitcore = require('bitcore-lib');
 const db = require('../db');
 const client = require('../lib/bitcoin-client');
+const isValidPK = require('../validation').isValidPrivateKey;
+const promisify = require('../lib/promisify');
+const importPrivKey = promisify(client.importPrivKey.bind(client));
+const listUnspent = promisify(client.listUnspent.bind(client));
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -10,27 +14,36 @@ router.get('/', function(req, res, next) {
 //=============================================================================================================
 router.post('/', function(req, res, next) {
   const privateKeyString = req.body.pk;
-  if(/\b[A-Fa-f0-9]{64}\b/.test(privateKeyString)) {
+  if(isValidPK(privateKeyString)) {
     console.log("VALID");
     //console.log('db', db);
     db.set('addrFromPrKey', bitcore.PrivateKey(privateKeyString).toAddress());
     //console.log('after set key');
     const WIFkey = bitcore.PrivateKey(privateKeyString).toWIF();
 
-    (new Promise((resolve, reject) => {
-      client.importPrivKey(WIFkey, (err, res) => {
-        err ? reject(err) : resolve(res);
-      })
-    }))
+    // (new Promise((resolve, reject) => {
+    //   client.importPrivKey(WIFkey, (err, res) => {
+    //     err ? reject(err) : resolve(res);
+    //   })
+    // }))
+
+
+    // importPrivKey(WIFkey)
+    // .then(res => {
+    //   //console.log('before listUnspent');
+    //   return new Promise((resolve, reject) => {
+    //     client.listUnspent(1, 9999999, [db.get('addrFromPrKey').toString()], (err, res) => {
+    //       err ? reject(err) : resolve(res);
+    //     });
+    //   });
+    // })
+    importPrivKey(WIFkey)
     .then(res => {
-      //console.log('before listUnspent');
-      return new Promise((resolve, reject) => {
-        client.listUnspent(1, 9999999, [db.get('addrFromPrKey').toString()], (err, res) => {
-          err ? reject(err) : resolve(res);
-        });
-      });
+      //console.log(res);
+      return listUnspent(1, 9999999, [db.get('addrFromPrKey').toString()])
     })
     .then(res => {
+      //console.log(res);
       const balance = res.reduce((acc, current) => {
         acc += current.amount;
         return acc;

@@ -1,11 +1,11 @@
-exports.isValidPrivateKey = function(privateKey) {
+exports.isValidPrivateKey = privateKey => {
   const pkRegExp = /\b[A-Fa-f0-9]{64}\b/; // \b - граница слова
-  console.log(pkRegExp.test(privateKey));
+  //console.log(pkRegExp.test(privateKey));
   return pkRegExp.test(privateKey);
 };
 
-exports.isValidaddress = function(address) {
+exports.isValidAddress = address => {
   const addrRegExp = /^[2mn][1-9A-HJ-NP-Za-km-z]{26,35}/;
-  console.log(addrRegExp.test(address));
+  //console.log(addrRegExp.test(address));
   return addrRegExp.test(address);
 };
