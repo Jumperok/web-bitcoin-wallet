@@ -3,54 +3,86 @@ extends layout
 block content
   #wrapper
     div(id='container', class='center-text')
-      //- span(id='close', onclick='location.reload()', title='sign out')
-      //-   img(src='/images/close_button.svg')
       #content
         img(src='/images/bitcoin_wallet.svg')
         h1 Bitcoin Wallet
         .left-text
-          p To deposit funds to your wallet, send Bitcoin to this address:
-          span(id='adr') #{address}
+          h4(id='deposit') To deposit funds to your wallet, send Bitcoin to this address:
+          h4(id='adr') #{address}
           div
-            h2(id='balance') Balance:
-            span(id='transactions') #{balance}
+            h3(id='balance') Balance:
+            h3(id='transactions') #{balance} BTC
           form(id='send_form' class='form-inline')
-            input(id='to', type='text', placeholder='address' class='form-control')
-            input(id='amount', type='text', placeholder='amount' class='form-control')
-            button(type='submit' class='btn btn-primary') Send
-          #status
+            div(id='address_div')
+              input(id='to', type='text', placeholder='Receiver address' class='form-control')
+              div(id='addr_invalid')
+            div(id='amount_div')
+              input(id='amount', type='text', placeholder='Amount' class='form-control')
+              div(id='amount_invalid')
+            div
+              button(type='submit' class='btn btn-primary') Send
+              div(id='button_under' class='invis')
+          //#status
           button(type='button' id='button' class='btn btn-primary') Confirms
           #confirms
   script(src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js')
   script.
-    $(document.forms['send_form']).on('submit', function(e) {
-      e.preventDefault();
-      //var form = $(this);
-      //console.log($('#passphrase').val());
+    function getConfirms(){
       $.ajax({
-        url: '/send',
+        url: '/send/:txid',
         method: 'POST',
-        data: {toAddr: $('#to').val(), amount: $('#amount').val()},
-      //-   complete: function() {
-      //-     $(":submit", form).button("reset");
-      //-   },
+        data: {txid: 'fb11cf1b44aba478ba21071a589d31975db4e5437c1e6fb2d19f0918645f04a3'},
         statusCode: {
           200: function(jqXHR) {
-            
-            $("#status").text(jqXHR.responseText);
-            //form.html("You are logged in").addClass('alert-success');
-            //window.location.href = "/send";
+            $("#confirms").text(jqXHR);
+            console.log(jqXHR);
           },
           400: function(jqXHR) {
-            $("#status").text(jqXHR.responseText);
-            //- var error = JSON.parse(jqXHR.responseText);
-            //- $('.error', form).html(error.message);
-            console.log("looool");
             console.log(jqXHR);
           }
         }
       });
-      //return false;
+      getConfirmsLong();
+    }
+    
+    function getConfirmsLong(){  
+      setTimeout(getConfirms, 10000);
+    }
+    
+    $(document.forms['send_form']).on('submit', function(e) {
+      e.preventDefault();
+      $.ajax({
+        url: '/send',
+        method: 'POST',
+        data: {toAddr: $('#to').val(), amount: $('#amount').val()},
+        statusCode: {
+          200: function(jqXHR) {            
+            $("#to").removeClass("is-invalid");
+            $("#addr_invalid").removeClass("invalid-feedback").addClass("invis").text(".");
+            $("#amount").removeClass("is-invalid");
+            $("#amount_invalid").removeClass("invalid-feedback").addClass("invis").text(".");
+            $("#button").css("visibility", "visible");
+          },
+          400: function(jqXHR) {
+            $("#button_under").text(".");
+            $("#amount").removeClass("is-invalid");
+            $("#amount_invalid").removeClass("invalid-feedback").addClass("invis").text(".");
+            $("#addr_invalid").addClass("invis").text(".");
+            
+            switch(jqXHR.responseText) {
+              case "1":
+                $("#to").addClass("is-invalid");
+                $("#addr_invalid").addClass("invalid-feedback").removeClass("invis").text("Address is invalid");
+                break;
+              case "2":
+                $("#amount").addClass("is-invalid");
+                $("#amount_invalid").addClass("invalid-feedback").removeClass("invis").text("Not enough money");
+                break;
+            }
+            
+          }
+        }
+      });  
     });
     
     $("#button").click(function(e){
@@ -59,25 +91,16 @@ block content
         url: '/send/:txid',
         method: 'POST',
         data: {txid: 'fb11cf1b44aba478ba21071a589d31975db4e5437c1e6fb2d19f0918645f04a3'},
-      //-   complete: function() {
-      //-     $(":submit", form).button("reset");
-      //-   },
         statusCode: {
           200: function(jqXHR) {
-            
             $("#confirms").text(jqXHR);
             console.log(jqXHR);
-            //form.html("You are logged in").addClass('alert-success');
-            //window.location.href = "/send";
           },
           400: function(jqXHR) {
-            //$("#confirms").text(jqXHR.responseText);
-            //- var error = JSON.parse(jqXHR.responseText);
-            //- $('.error', form).html(error.message);
-            console.log("looool");
             console.log(jqXHR);
           }
         }
       });
+      getConfirmsLong();
     });
     
