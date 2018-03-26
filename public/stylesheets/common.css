@@ -10,6 +10,10 @@ html {
     padding: 10px 0;
 }
 
+#status {
+  color: red;
+}
+
 #header-binary a {
     margin: 0 auto;
     vertical-align: middle;
@@ -54,6 +58,10 @@ form input {
     width: 80%;
 }
 
+#passphrase {
+  margin: 10px;
+}
+
 #pass_form {
     /* display: none;
 }
@@ -84,15 +92,21 @@ form input {
 }
 
 #amount {
-    width: 30%;
+    width: 20%;
+    margin: 10px;
 }
 
 #to {
-    width: 48%;
+    width: 60%;
+    margin: 10px;
 }
 
 #transactions {
     margin-left: 15px;
+}
+
+#confirms {
+  display: inline;
 }
 
 #footer {

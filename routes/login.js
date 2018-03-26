@@ -25,7 +25,7 @@ router.post('/', function(req, res, next) {
     .then(res => {
       //console.log('before listUnspent');
       return new Promise((resolve, reject) => {
-        client.listUnspent(1, 9999999, [db.get('addrFromPrKey').toString()], function(err, res){
+        client.listUnspent(1, 9999999, [db.get('addrFromPrKey').toString()], (err, res) => {
           err ? reject(err) : resolve(res);
         });
       });
