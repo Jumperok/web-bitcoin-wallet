@@ -8,17 +8,17 @@ const listUnspent = promisify(client.listUnspent.bind(client));
 const createRawTransaction = promisify(client.createRawTransaction.bind(client));
 const signRawTransaction = promisify(client.signRawTransaction.bind(client));
 const listTransactions = promisify(client.listTransactions.bind(client));
+const sendRawTransaction = promisify(client.sendRawTransaction.bind(client));
 
 const fromDataToObject = (sendToAddr, amountToSend, fromAddr, tempAmount, fee) => {
   let obj = {};
   obj[sendToAddr] = amountToSend;
-  obj[fromAddr] = tempAmount-amountToSend-fee; // send back the rest of money
+  obj[fromAddr] = (tempAmount-amountToSend-fee).toFixed(8); // send back the rest of money
   return obj;
 };
 
 router.get('/send', function(req, res, next) {
   if(db.get('addrFromPrKey') === undefined){
-    //window.location.href = "/";
     res.render('login');
   } else {
     res.render('send', { address: db.get('addrFromPrKey'), balance: db.get('balance')});
@@ -30,11 +30,8 @@ router.post('/send', function(req, res, next) {
   const fee = 0.0001;
   const sendToAddr = req.body.toAddr
   const amountToSend = +req.body.amount;
-  console.log(amountToSend);
 
-  if((amountToSend+fee < db.get('balance')) && (amountToSend > 0)){
-    console.log(amountToSend+fee);
-    console.log(db.get('balance'));
+  if((amountToSend+fee < db.get('balance')) && (amountToSend > 0)){ //if you have enough money
     if(isValidAddress(sendToAddr)) {
       listUnspent(1, 9999999, [fromAddr])
       .then(listUnsp => {
@@ -44,8 +41,7 @@ router.post('/send', function(req, res, next) {
         for(let i = 0; i < listUnsp.length; i++){ // make txArray
           tempAmount += listUnsp[i].amount;
           txArray.push({"txid":listUnsp[i].txid, "vout":listUnsp[i].vout});
-          if(tempAmount > amountToSend + fee){
-            console.log("U HAVE ENOUGH MONEY");
+          if(tempAmount > (amountToSend + fee)){ // you can make transaction with txArray that was made
             break;
           }
         }
@@ -53,38 +49,43 @@ router.post('/send', function(req, res, next) {
         return createRawTransaction(txArray, fromDataToObject(sendToAddr, amountToSend, fromAddr, tempAmount, fee))
       })
       .then(response => {
-        console.log("CREATE_TRANS");
-        console.log(response);
         return signRawTransaction(response)
       })
       .then(response => {
-        console.log(response);
-        res.status(200).send('All ok');
-      }).catch(err => {
+        return sendRawTransaction(response.hex)
+      })
+      .then(response => {
+        res.status(200).send(response);
+      })
+      .catch(err => {
         console.log('ERROR', err);
       });
     }
     else {
-      res.status(400).send("1");
+      res.status(400).send("1"); // invalid address
     }
   } else {
-    res.status(400).send("2");
+    res.status(400).send("2"); // don't have enough money
   }
 }); // router post
 //===================================================================================================
 router.post('/send/:txid', function(req, res, next) {
   console.log(req.body);
+
   listTransactions()
   .then(response => {
-    //console.log(response);
+
     for(var i = 0; i<response.length; i++){
       if(response[i].txid == req.body.txid){
-        //console.log(response[i].confirmations);
         db.set('confirmations', response[i].confirmations);
-        res.status(200).send(response[i].confirmations.toString());
         break;
       }
     }
+
+  })
+  .then(() => {
+    console.log(db);
+    res.status(200).send(db.get('confirmations').toString());
   })
   .catch(err => {
     console.error(err);

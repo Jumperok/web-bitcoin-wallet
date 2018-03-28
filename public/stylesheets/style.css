@@ -19,6 +19,14 @@ a {
     padding: 10px 0;
 }
 
+.h_inline{
+  display: inline;
+}
+
+#trans_info{
+  margin-top: 10px;
+}
+
 #address_div{
   margin-right: 10px;
   width: 55%;
@@ -27,6 +35,10 @@ a {
 #amount_div{
   margin-right: 20px;
   width: 20%;
+}
+
+#after_accept{
+  visibility: hidden;
 }
 
 #button{
@@ -108,6 +120,11 @@ a {
 
 #amount {
     width: 20%;
+}
+
+.h_inline_block{
+  display: inline-block;
+  margin: 0;
 }
 
 #transactions {

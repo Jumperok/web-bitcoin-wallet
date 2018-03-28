@@ -22,31 +22,50 @@ block content
             div
               button(type='submit' class='btn btn-primary') Send
               div(id='button_under' class='invis')
-          //#status
-          button(type='button' id='button' class='btn btn-primary') Confirms
-          #confirms
+          div(id='after_accept')
+            h5(class='h_inline_block') Your transaction&nbsp;
+            h5(class='trans_id' class='h_inline')
+            div
+            h5(class='h_inline_block') is confirmed by
+            h5(class='trans_conf' class='h_inline') &nbsp;0 
+            h5(class='h_inline') confirmations in block
+            h5(id='trans_block' class='h_inline')
+          div(id='before_accept' class='invis')
+            h5(class='h_inline_block') Your transaction
+            h5(id='tran_id' class='trans_id' class='h_inline')
+            div
+            h5(class='h_inline_block') is accepted, please wait for confirmation.
+            div
+            h5(class='h_inline_block') Number of confirmations:
+            h5(id='tran_conf' class='trans_conf' class='h_inline') &nbsp;0 
+            
+            
   script(src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js')
   script.
     function getConfirms(){
       $.ajax({
         url: '/send/:txid',
         method: 'POST',
-        data: {txid: 'fb11cf1b44aba478ba21071a589d31975db4e5437c1e6fb2d19f0918645f04a3'},
+        data: {txid: $("#tran_id").text()},
         statusCode: {
           200: function(jqXHR) {
-            $("#confirms").text(jqXHR);
+            $(".trans_conf").text(" " + jqXHR + " ");
             console.log(jqXHR);
+            if(jqXHR>0 && !$("#before_accept").hasClass("invis")) {
+              $("#before_accept").hide();
+              $("#after_accept").css("visibility", "visible");
+              $("#after_accept").show();
+            }
           },
           400: function(jqXHR) {
             console.log(jqXHR);
           }
         }
       });
-      getConfirmsLong();
-    }
-    
-    function getConfirmsLong(){  
-      setTimeout(getConfirms, 10000);
+      if($("#tran_conf").text().trim() > 0){
+        return;
+      }
+      setTimeout(getConfirms, 20000);
     }
     
     $(document.forms['send_form']).on('submit', function(e) {
@@ -56,12 +75,19 @@ block content
         method: 'POST',
         data: {toAddr: $('#to').val(), amount: $('#amount').val()},
         statusCode: {
-          200: function(jqXHR) {            
-            $("#to").removeClass("is-invalid");
+          200: function(jqXHR) { 
+            console.log(jqXHR);
+            $(".trans_id").text(jqXHR);      
+            $("#button_under").text(".");
+            $("#to").removeClass("is-invalid").val("");
             $("#addr_invalid").removeClass("invalid-feedback").addClass("invis").text(".");
-            $("#amount").removeClass("is-invalid");
+            $("#amount").removeClass("is-invalid").val("");
             $("#amount_invalid").removeClass("invalid-feedback").addClass("invis").text(".");
-            $("#button").css("visibility", "visible");
+            $(".trans_conf").text(" 0 ");
+            $("#before_accept").removeClass("invis");
+            $("#before_accept").show();  
+            $("#after_accept").hide();            
+            getConfirms();
           },
           400: function(jqXHR) {
             $("#button_under").text(".");
@@ -84,23 +110,3 @@ block content
         }
       });  
     });
-    
-    $("#button").click(function(e){
-      e.preventDefault();
-      $.ajax({
-        url: '/send/:txid',
-        method: 'POST',
-        data: {txid: 'fb11cf1b44aba478ba21071a589d31975db4e5437c1e6fb2d19f0918645f04a3'},
-        statusCode: {
-          200: function(jqXHR) {
-            $("#confirms").text(jqXHR);
-            console.log(jqXHR);
-          },
-          400: function(jqXHR) {
-            console.log(jqXHR);
-          }
-        }
-      });
-      getConfirmsLong();
-    });
-    

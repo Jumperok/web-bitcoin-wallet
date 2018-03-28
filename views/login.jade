@@ -29,7 +29,7 @@ block content
           },
           400: function(jqXHR) {
             console.log(jqXHR.responseText);
-            $(".under_button").text(".");
+            $("#under_button").text(".");
             $("#status").text(jqXHR.responseText);
             $("#passphrase").addClass("form-control is-invalid");
           }

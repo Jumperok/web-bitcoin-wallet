@@ -3,6 +3,7 @@ const bitcore = require('bitcore-lib');
 const db = require('../db');
 const client = require('../lib/bitcoin-client');
 const isValidPK = require('../validation').isValidPrivateKey;
+const getBalance = require('../lib/getBalance');
 const promisify = require('../lib/promisify');
 const importPrivKey = promisify(client.importPrivKey.bind(client));
 const listUnspent = promisify(client.listUnspent.bind(client));
@@ -22,13 +23,10 @@ router.post('/', function(req, res, next) {
       return listUnspent(1, 9999999, [db.get('addrFromPrKey').toString()])
     })
     .then(res => {
-      const balance = res.reduce((acc, current) => {
-        acc += current.amount;
-        return acc;
-      }, 0);
-      db.set('balance', balance);
+      getBalance(res);
     })
     .then(() => {
+      console.log(db);
       res.status(200).send();
     })
     .catch(err => {
