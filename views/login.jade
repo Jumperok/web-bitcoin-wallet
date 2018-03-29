@@ -31,7 +31,6 @@ block content
             window.location.href = "/send";
           },
           400: function(jqXHR) {
-            console.log(jqXHR);
             setTimeout(tryToImportPK, 20000);
           }
         }
@@ -54,7 +53,6 @@ block content
             window.location.href = "/send";
           },
           400: function(jqXHR) {
-            console.log(jqXHR.responseText);
             switch(jqXHR.responseText) {
               case "Private Key is not valid":
                 $("#for_error").text("");
