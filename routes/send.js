@@ -26,7 +26,7 @@ router.get('/send', function(req, res, next) {
     res.render('send', { address: db.get('addrFromPrKey'), balance: db.get('balance')});
   }
 });
-//=================================================================================================================================
+//===================================================================================================
 router.post('/send', function(req, res, next) {
   const fromAddr = db.get('addrFromPrKey').toString();
   const fee = 0.0001;
@@ -60,7 +60,6 @@ router.post('/send', function(req, res, next) {
         res.status(200).send(result);
       })
       .catch(err => {
-        console.log('ERROR', err);
         if(err.code === -5) {
           res.status(400).send("Invalid address");
         }
@@ -79,7 +78,6 @@ router.post('/send', function(req, res, next) {
 //===================================================================================================
 router.post('/send/:txid', function(req, res, next) {
   let responseObj = {};
-  console.log(req.body);
 
   listTransactions()
   .then(result => {
@@ -100,7 +98,6 @@ router.post('/send/:txid', function(req, res, next) {
     res.status(200).send(responseObj);
   })
   .catch(err => {
-    console.error(err);
     res.status(400).send("Can't see confirmations");
   });
 });
