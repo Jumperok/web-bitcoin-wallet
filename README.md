@@ -5,7 +5,7 @@ Bitcoin wallet that can create and send transactions to the bitcoin network.
 ## Getting Started
 
 1) In order to run this application you need a running bitcoin node. https://bitcoin.org/en/full-node#what-is-a-full-node here you can see how to install bitcoin node. 
-2) After installing run bitcoin node as daemon, here you can see how to do it https://bitcoin.org/en/full-node#ubuntu-daemon.
+2) After installation run bitcoin node as daemon, here you can see how to do it https://bitcoin.org/en/full-node#ubuntu-daemon.
 3) Download this application and install all dependencies that it needs by means of command:
 ```
 npm i
