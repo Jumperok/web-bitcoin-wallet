@@ -28,7 +28,7 @@ block content
             div
             h5(class='h_inline_block') is confirmed by
             h5(class='trans_conf' class='h_inline') &nbsp;0 
-            h5(class='h_inline') confirmations in block
+            h5(class='h_inline') confirmations in block&nbsp;
             h5(id='trans_block' class='h_inline')
           div(id='before_accept' class='invis')
             h5(class='h_inline_block') Your transaction
@@ -38,7 +38,7 @@ block content
             div
             h5(class='h_inline_block') Number of confirmations:
             h5(id='tran_conf' class='trans_conf' class='h_inline') &nbsp;0 
-            
+          #for_err
             
   script(src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js')
   script.
@@ -49,9 +49,10 @@ block content
         data: {txid: $("#tran_id").text()},
         statusCode: {
           200: function(jqXHR) {
-            $(".trans_conf").text(" " + jqXHR + " ");
+            $(".trans_conf").text(" " + jqXHR.confirmations + " ");
             console.log(jqXHR);
-            if(jqXHR>0 && !$("#before_accept").hasClass("invis")) {
+            if(jqXHR.confirmations>0 && !$("#before_accept").hasClass("invis")) {
+              $("#trans_block").text(jqXHR.blockHeight);
               $("#before_accept").hide();
               $("#after_accept").css("visibility", "visible");
               $("#after_accept").show();
@@ -96,14 +97,17 @@ block content
             $("#addr_invalid").addClass("invis").text(".");
             
             switch(jqXHR.responseText) {
-              case "1":
+              case "Invalid address":
                 $("#to").addClass("is-invalid");
                 $("#addr_invalid").addClass("invalid-feedback").removeClass("invis").text("Address is invalid");
                 break;
-              case "2":
+              case "Not enough money":
                 $("#amount").addClass("is-invalid");
                 $("#amount_invalid").addClass("invalid-feedback").removeClass("invis").text("Not enough money");
                 break;
+              case "Try again later":
+                $("#for_err").text("Try again later");
+                break;  
             }
             
           }

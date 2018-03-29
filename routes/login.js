@@ -18,20 +18,28 @@ router.post('/', function(req, res, next) {
   if(isValidPK(privateKeyString)) {
     db.set('addrFromPrKey', bitcore.PrivateKey(privateKeyString).toAddress());
     const WIFkey = bitcore.PrivateKey(privateKeyString).toWIF();
+
     importPrivKey(WIFkey)
-    .then(res => {
+    .then(result => {
       return listUnspent(1, 9999999, [db.get('addrFromPrKey').toString()])
     })
-    .then(res => {
-      getBalance(res);
+    .then(result => { //getBalance - безточечная нотация
+      getBalance(result);
     })
     .then(() => {
       console.log(db);
       res.status(200).send();
     })
     .catch(err => {
-      console.error(err);
+      //console.error(err);
+      console.log(err.code);
+      if(err.code === -4 || err.code === 'ESOCKETTIMEDOUT') {
+        res.status(400).send('Try again now');
+      } else {
+        res.status(400).send('Please try again later');
+      }
     });
+
   }
   else {
     res.status(400).send('Private Key is not valid');

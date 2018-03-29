@@ -19,6 +19,10 @@ a {
     padding: 10px 0;
 }
 
+#for_error{
+  padding-top: 10px;
+}
+
 .h_inline{
   display: inline;
 }

@@ -9,6 +9,8 @@ const createRawTransaction = promisify(client.createRawTransaction.bind(client))
 const signRawTransaction = promisify(client.signRawTransaction.bind(client));
 const listTransactions = promisify(client.listTransactions.bind(client));
 const sendRawTransaction = promisify(client.sendRawTransaction.bind(client));
+const getBlockHeader = promisify(client.getBlockHeader.bind(client));
+
 
 const fromDataToObject = (sendToAddr, amountToSend, fromAddr, tempAmount, fee) => {
   let obj = {};
@@ -18,7 +20,7 @@ const fromDataToObject = (sendToAddr, amountToSend, fromAddr, tempAmount, fee) =
 };
 
 router.get('/send', function(req, res, next) {
-  if(db.get('addrFromPrKey') === undefined){
+  if (db.get('addrFromPrKey') === undefined) {
     res.render('login');
   } else {
     res.render('send', { address: db.get('addrFromPrKey'), balance: db.get('balance')});
@@ -31,7 +33,7 @@ router.post('/send', function(req, res, next) {
   const sendToAddr = req.body.toAddr
   const amountToSend = +req.body.amount;
 
-  if((amountToSend+fee < db.get('balance')) && (amountToSend > 0)){ //if you have enough money
+  if ((amountToSend+fee < db.get('balance')) && (amountToSend > 0)) { //if you have enough money
     if(isValidAddress(sendToAddr)) {
       listUnspent(1, 9999999, [fromAddr])
       .then(listUnsp => {
@@ -48,44 +50,54 @@ router.post('/send', function(req, res, next) {
 
         return createRawTransaction(txArray, fromDataToObject(sendToAddr, amountToSend, fromAddr, tempAmount, fee))
       })
-      .then(response => {
-        return signRawTransaction(response)
+      .then(result => {
+        return signRawTransaction(result)
       })
-      .then(response => {
-        return sendRawTransaction(response.hex)
+      .then(result => {
+        return sendRawTransaction(result.hex)
       })
-      .then(response => {
-        res.status(200).send(response);
+      .then(result => {
+        res.status(200).send(result);
       })
       .catch(err => {
         console.log('ERROR', err);
+        if(err.code === -5) {
+          res.status(400).send("Invalid address");
+        }
+        else {
+          res.status(400).send("Try again later");
+        }
       });
     }
     else {
-      res.status(400).send("1"); // invalid address
+      res.status(400).send("Invalid address");
     }
   } else {
-    res.status(400).send("2"); // don't have enough money
+    res.status(400).send("Not enough money");
   }
 }); // router post
 //===================================================================================================
 router.post('/send/:txid', function(req, res, next) {
+  let responseObj = {};
   console.log(req.body);
 
   listTransactions()
-  .then(response => {
+  .then(result => {
 
-    for(var i = 0; i<response.length; i++){
-      if(response[i].txid == req.body.txid){
-        db.set('confirmations', response[i].confirmations);
+    for (var i = 0; i<result.length; i++){
+      if (result[i].txid === req.body.txid) {
+        responseObj.confirmations = result[i].confirmations;
         break;
       }
     }
 
+    return result[i].confirmations > 0 ? getBlockHeader(result[i].blockhash) : false;
+  })
+  .then(result => {
+    responseObj.blockHeight = result.height;
   })
   .then(() => {
-    console.log(db);
-    res.status(200).send(db.get('confirmations').toString());
+    res.status(200).send(responseObj);
   })
   .catch(err => {
     console.error(err);

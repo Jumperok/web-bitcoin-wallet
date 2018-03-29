@@ -14,10 +14,33 @@ block content
           div
             button(type='submit' class='btn btn-primary') Open
             div(id='under_button' class='invis')
+        h5(id='for_error') Bitcoin node trying to import your Private Key. Please wait couple of minutes.
           
   script(src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js')
   script.
+    $("#for_error").text("");
+    
+    function tryToImportPK(){
+      $.ajax({
+        url: '/',
+        method: 'POST',
+        data: {pk: $('#passphrase').val()},
+        statusCode: {
+          200: function() {
+            $("#for_error").text("");
+            window.location.href = "/send";
+          },
+          400: function(jqXHR) {
+            console.log(jqXHR);
+            setTimeout(tryToImportPK, 20000);
+          }
+        }
+      });  
+    }
+    
     $(document.forms['pass_form']).on('submit', function(e) {
+      $("#under_button").text("");
+      $("#passphrase").removeClass("is-invalid");
       e.preventDefault();
       $.ajax({
         url: '/',
@@ -25,13 +48,29 @@ block content
         data: {pk: $('#passphrase').val()},
         statusCode: {
           200: function() {
+            $("#for_error").text("");
+            $("#under_button").text("");
+            $("#status").text("");
             window.location.href = "/send";
           },
           400: function(jqXHR) {
             console.log(jqXHR.responseText);
-            $("#under_button").text(".");
-            $("#status").text(jqXHR.responseText);
-            $("#passphrase").addClass("form-control is-invalid");
+            switch(jqXHR.responseText) {
+              case "Private Key is not valid":
+                $("#for_error").text("");
+                $("#under_button").text(".");
+                $("#status").text(jqXHR.responseText);
+                $("#passphrase").addClass("is-invalid");
+                break;
+              case "Try again now":
+                $("#for_error").text("Bitcoin node trying to import your Private Key. Please wait couple of minutes.");
+                $("#under_button").text("");
+                tryToImportPK();
+                break;
+              case "Please try again later":
+                $("#for_error").text("Please try again later");
+                break;
+            }  
           }
         }
       });
