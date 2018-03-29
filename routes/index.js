@@ -1,4 +1,4 @@
-var express = require('express'); // let?
+var express = require('express');
 var router = express.Router();
 const login = require('./login');
 const send = require('./send');
