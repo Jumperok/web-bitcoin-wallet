@@ -23,16 +23,13 @@ router.post('/', function(req, res, next) {
     .then(result => {
       return listUnspent(1, 9999999, [db.get('addrFromPrKey').toString()])
     })
-    .then(result => { //getBalance - безточечная нотация
+    .then(result => {
       getBalance(result);
     })
     .then(() => {
-      console.log(db);
       res.status(200).send();
     })
     .catch(err => {
-      //console.error(err);
-      console.log(err.code);
       if(err.code === -4 || err.code === 'ESOCKETTIMEDOUT') {
         res.status(400).send('Try again now');
       } else {
