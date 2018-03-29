@@ -50,7 +50,6 @@ block content
         statusCode: {
           200: function(jqXHR) {
             $(".trans_conf").text(" " + jqXHR.confirmations + " ");
-            console.log(jqXHR);
             if(jqXHR.confirmations>0 && !$("#before_accept").hasClass("invis")) {
               $("#trans_block").text(jqXHR.blockHeight);
               $("#before_accept").hide();
@@ -59,7 +58,6 @@ block content
             }
           },
           400: function(jqXHR) {
-            console.log(jqXHR);
           }
         }
       });
@@ -77,7 +75,6 @@ block content
         data: {toAddr: $('#to').val(), amount: $('#amount').val()},
         statusCode: {
           200: function(jqXHR) { 
-            console.log(jqXHR);
             $(".trans_id").text(jqXHR);      
             $("#button_under").text(".");
             $("#to").removeClass("is-invalid").val("");
